@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>登录页面</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+<body>
+    <div class="centered-form">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.username.label }}<br>
+                {{ form.username(size=32) }}<!--控制宽度-->
+            </p>
+            <p>
+                {{ form.password.label }}<br>
+                {{ form.password(size=32) }}
+            </p>
+            <p>{{ form.submit() }}</p>
+        </form>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('register')}}'">Register</button>
+        <span style="margin-left: 10px;">没有账号，点击注册</span>
+    </div>
+</body>
+</html>
+

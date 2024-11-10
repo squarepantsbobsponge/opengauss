@@ -1,0 +1,52 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>注册页面</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <style>
+            .error {
+                color: red;
+                display: none; /* 默认隐藏错误提示 */
+            }
+        </style>
+    </head>
+<body>
+    <div class="centered-form">
+        <form method="POST" id="RegisterForm">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.username.label }}<br>
+                {{ form.username(size=32) }}<!--控制宽度-->
+            </p>
+            <p>
+                {{ form.password.label }}<br>
+                {{ form.password(size=32) }}
+            </p>
+            <p>
+                <span id="error" class="error">Passwords do not match!</span>
+                <br>
+            </p> 
+            <p>
+                {{ form.confirm_password.label }}<br>
+                {{ form.confirm_password(size=32) }}
+            </p>
+            <p>{{ form.submit() }}</p>
+        </form>
+    </div>
+    <script>
+        document.getElementById('RegisterForm').addEventListener('submit', function(event) {
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirm_password').value;
+            var error = document.getElementById('error');
+ 
+            if (password !== confirmPassword) {
+                error.style.display = 'block'; // 显示错误提示
+                event.preventDefault(); // 阻止表单提交
+            } else {
+                error.style.display = 'none'; // 隐藏错误提示（如果之前显示过）
+            }
+        });
+    </script>
+</body>
+</html>

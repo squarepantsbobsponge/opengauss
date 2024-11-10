@@ -1,0 +1,8 @@
+.centered-form {
+    width: 300px; /* 根据需要调整宽度 */
+    margin: 0 auto; /* 水平居中 */
+    padding: 20px; /* 可选，为表单添加一些内边距 */
+    border: 1px solid #ccc; /* 可选，为表单添加边框 */
+    border-radius: 5px; /* 可选，为表单添加圆角 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 可选，为表单添加阴影 */
+}

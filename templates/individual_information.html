@@ -1,0 +1,65 @@
+<html>
+<body>
+    <h1>Welcome, {{ username }}!</h1>  <!-- 在这里显示用户名字 -->
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('search')}}'">Search and book</button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('individual_information_get')}}'">Search book history</button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('exit_login')}}'">退出登录</button>
+    <!-- 结果列表部分 -->
+    {% if results %}
+    <h2>Search Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>username</th>
+                <th>seat_id</th>
+                <th>time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[0] }}</td>
+                <td>{{ result[1] }}</td>
+                <td>
+                    <button class="cancel-book-button" onclick="cancelbookSeat('{{ result[0] }}', '{{ result[1] }}')">cancelBook</button>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+    function cancelbookSeat(seat_id, time) {
+    // 显示预订的座位号和乘客姓名（可选）
+    alert('Booking seat ID: ' + seat_id + ' in time: ' + time);
+
+    fetch('/individual_information', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ seat_id: seat_id, time: time })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success==true) {
+            alert('cancel booked successfully!');
+        } else {
+            alert('Failed to cancel book seat. Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while booking the seat.');
+    });
+}
+    </script>
+    {% else %}
+    <p>No seats found.</p>
+    {% endif %}
+</body>
+</html>

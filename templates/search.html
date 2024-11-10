@@ -1,0 +1,87 @@
+<html>
+<body>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.choice1.label }}<br>
+            {{ form.choice1(size=3) }}
+        </p>
+        <p>
+            {{ form.choice2.label }}<br>
+            {{ form.choice2(size=3) }}
+        </p>
+        <p>
+            {{ form.choice3.label }}<br>
+            {{ form.choice3(size=3) }}
+        </p>
+        <p>
+            {{ form.choice4.label }}<br>
+            {{ form.choice4(size=3) }}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('individual_information_get')}}'">个人信息</button>
+    <!-- 结果列表部分 -->
+    {% if results %}
+    <h2>Search Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Seat Number</th>
+                <th>Library</th>
+                <th>Floor</th>
+                <th>Status</th>
+                <th>Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result[0] }}</td>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[3] }}</td>
+                <td>{{ result[4] }}</td>
+                <td>
+                    <button class="book-button" onclick="bookSeat('{{ result[0] }}', '{{ result[4] }}')">Book</button>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        function bookSeat(seat_id, time) {
+    // 显示预订的座位号和乘客姓名（可选）
+    alert('Booking seat ID: ' + seat_id + ' in time: ' + time);
+
+    fetch('/book-seat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ seat_id: seat_id, time: time })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success==true) {
+            alert('Seat booked successfully!');
+        } else {
+            alert('Failed to book seat. Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while booking the seat.');
+    });
+}
+    </script>
+    {% else %}
+    <p>No seats found.</p>
+    {% endif %}
+</body>
+</html>
