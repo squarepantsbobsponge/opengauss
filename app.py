@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template,flash
 from flask_wtf import FlaskForm
 from flask import Flask, request, redirect, url_for, Response,jsonify,session
 from wtforms import StringField, PasswordField, SubmitField,SelectField
@@ -8,15 +8,18 @@ from psycopg2 import connect
 from psycopg2 import sql  
 import os
 import logging 
+import config
 
 
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '20241030'
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    userid = StringField('Userid', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+    role = SelectField('Role', choices=[('student', 'Student'), ('admin', 'Admin')], validators=[DataRequired()])
     submit = SubmitField('Login')
+
 
 class SearchForm(FlaskForm):
     choice1 = SelectField('选择图书馆', choices=[('南校图书馆', '南校图书馆'), ('东校图书馆', '东校图书馆')],validators=[DataRequired()])
@@ -40,17 +43,17 @@ def create_conn():
     """
     env = os.environ
     params = {
-        'database': env.get('OG_DATABASE', 'db_school'),
-        'user': env.get('OG_USER', 'testuser'),
-        'password': env.get('OG_PASSWORD', 'Dxq@719171'),
-        'host': env.get('OG_HOST', '192.168.91.40'),
-        'port': env.get('OG_PORT', 7654),
+        'database': env.get('OG_DATABASE', config.DEFAULT_DATABASE),
+        'user': env.get('OG_USER', config.DEFAULT_USER),
+        'password': env.get('OG_PASSWORD', config.DEFAULT_PASSWORD),
+        'host': env.get('OG_HOST', config.DEFAULT_HOST),
+        'port': env.get('OG_PORT', config.DEFAULT_PORT),
         'client_encoding':('UTF-8')  #要加这个不然会报错
     }
     conn = connect(**params)
     return conn
 
-
+@app.route("/",methods=['GET','POST'])
 @app.route("/login",methods=['GET','POST'])
 def login():
     form = LoginForm()
@@ -60,21 +63,33 @@ def login():
         cnn=create_conn()
         cursor=cnn.cursor()
         # 获取表单数据  
-        username = form.username.data  
+        userid = form.userid.data  
         password = form.password.data  
-
-        # 构建参数化查询  
-        query = sql.SQL("SELECT * FROM book_eg.user WHERE username = %s AND password = %s")  
-        params = (username, password)  
-    #try:
-        cursor.execute(query, params)
-        results=cursor.fetchall()
-        if len(results)==1:
-            session['username']=results[0][0] #为当前会话的用户存储id，跳转到重定向页面后也可访问当前id
-            return redirect(url_for('individual_information_get'))
-        else:
-         return "用户名/密码不正确"
-        cnn.close()
+        user_role = form.role.data
+        # 构建参数化查询 
+        query = sql.SQL("SELECT * FROM administrator WHERE aid = %s AND password = %s")  
+        params = (userid, password)  
+        if user_role=='student':
+            query = sql.SQL("SELECT * FROM STUDENTS WHERE sid = %s AND password = %s")  
+            params = (userid, password) 
+        try:
+            cursor.execute(query, params)
+            results=cursor.fetchall()
+            if len(results)==1:
+                session['userid']=results[0][0] #为当前会话的用户存储id，跳转到重定向页面后也可访问当前id
+                return redirect(url_for('individual_information_get'))
+            else:
+                flash('用户名/密码不正确', 'error')  # 使用flash来显示错误信息，而不是直接返回字符串
+                return redirect(url_for('login'))  # 重定向回登录页面                
+        except Exception as e:
+        # 记录错误日志或执行其他错误处理逻辑
+            print(f"An error occurred: {e}")
+            flash('登录时发生错误，请稍后再试。', 'error')
+            return redirect(url_for('login'))
+        finally:
+        # 确保数据库连接被关闭
+            cursor.close()
+            cnn.close()
     return render_template('login.html', title='Sign In', form=form)  
 
 
